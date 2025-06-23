@@ -44,6 +44,9 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 # Add Windsurf/Codeium to PATH.
 export PATH="/Users/paulomoreira/.codeium/windsurf/bin:$PATH"
 
+# Add .NET to PATH.
+export PATH=$PATH:/usr/local/share/dotnet/
+
 # -----------------------------------------------------------------------------
 # USER-SPECIFIC ENVIRONMENT (Unity/ILS)
 # -----------------------------------------------------------------------------
