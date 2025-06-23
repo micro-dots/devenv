@@ -21,6 +21,6 @@ alias sublime="open -a Sublime\ Text $@"
 
 # Enable color support for 'ls' and distinguish file types.
 # This is a safe way to do it that works on different systems.
-ls --color=al > /dev/null 2&>1 && alias ls='ls -F --color=al' || alias ls='ls -G'
+ls --color=always > /dev/null 2>&1 && alias ls='ls -F --color=always' || alias ls='ls -G'
 
 # -----------------------------------------------------------------------------
