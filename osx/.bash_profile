@@ -33,6 +33,9 @@ export PATH=~/bin:$PATH
 # Add Homebrew to the shell environment.
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
+# Initialize rbenv
+eval "$(rbenv init - bash)"
+
 # Add Google Cloud SDK to PATH and enable shell command completion.
 #if [ -f '/Users/paulomoreira/Projects/google-cloud-sdk/path.bash.inc' ]; then
 #  . '/Users/paulomoreira/Projects/google-cloud-sdk/path.bash.inc'
@@ -46,6 +49,12 @@ export PATH="/Users/paulomoreira/.codeium/windsurf/bin:$PATH"
 
 # Add .NET to PATH.
 export PATH=$PATH:/usr/local/share/dotnet/
+
+# Add Ruby Gems to PATH.
+export PATH="$(gem environment gemdir)/bin:$PATH"
+
+# Add Homebrew OpenJDK to PATH.
+export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
 
 # -----------------------------------------------------------------------------
 # USER-SPECIFIC ENVIRONMENT (Unity/ILS)

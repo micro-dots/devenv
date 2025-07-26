@@ -23,4 +23,6 @@ alias sublime="open -a Sublime\ Text $@"
 # This is a safe way to do it that works on different systems.
 ls --color=always > /dev/null 2>&1 && alias ls='ls -F --color=always' || alias ls='ls -G'
 
-# -----------------------------------------------------------------------------
+# Neovim configuration aliases
+alias lazyvim='lazyvim_func'
+alias astrovim='astrovim_func'

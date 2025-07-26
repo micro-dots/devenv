@@ -145,6 +145,52 @@ curl -L https://iterm2.com/shell_integration/install_shell_integration_and_utili
 ```
 If needing to uninstall shell integration for any reason, check: https://gist.github.com/victor-torres/67c272be0cb0d6989729  
 
+## Text Editors and IDEs
+
+### 12. Side-by-Side Neovim Configurations (nvim, LazyVim, AstroNvim)
+
+This setup allows you to maintain and easily switch between different Neovim configurations:
+
+*   **`nvim`**: Your plain Neovim installation with default configurations.
+*   **`lazyvim`**: Your LazyVim setup.
+*   **`astrovim`**: Your AstroNvim setup.
+
+The `setup.sh` script automates the installation of Neovim, LazyVim, and AstroNvim, along with their core dependencies. It also sets up shell functions and aliases to easily switch between these configurations.
+
+**Installation Details:**
+
+The `setup.sh` script will:
+
+1.  **Install `lazygit` and `neovim`** using Homebrew.
+2.  **Check for required versions** of `git` and `nvim` for LazyVim and AstroNvim.
+3.  **Backup any existing Neovim configurations** before cloning new ones.
+4.  **Clone the LazyVim starter repository** into `~/.config/nvim` (which will be aliased to `lazyvim`).
+5.  **Clone the AstroNvim starter repository** into `~/.config/astronvim` and remove its `.git` folder.
+6.  **Install additional dependencies** required by LazyVim and AstroNvim, including:
+    *   `fish`, `ast-grep`, `luarocks`, `go`, `composer`, `php`, `rust`, `openjdk`, `julia`, `ghostscript`, `tectonic`, `fd` (for AstroNvim).
+    *   `@mermaid-js/mermaid-cli` (npm package).
+    *   A dedicated Python virtual environment for Neovim (`~/.venvs/nvim`) with `pynvim` installed.
+    *   `rbenv` and a recent stable Ruby version (3.3.0), then installs the `neovim` Ruby gem using `rbenv exec`.
+    *   `perl`, `cpanminus`, and the `MsgPack::Raw` and `Neovim::Ext` Perl modules, using `local::lib` for isolated installation.
+
+**Usage:**
+
+After running the `setup.sh` script (remember to `source ./setup.sh` for environment changes to take effect in your current shell), you can use the following commands:
+
+*   **`nvim`**: Opens plain Neovim with its default configuration.
+*   **`lazyvim`**: Opens Neovim with your LazyVim configuration.
+*   **`astrovim`**: Opens Neovim with your AstroNvim configuration.
+
+**Important Notes:**
+
+*   **Sourcing the `setup.sh` script:** For environment variables and aliases to be available in your current shell session, you **must** `source` the `setup.sh` script (e.g., `source ./setup.sh`). Running it directly (`./setup.sh`) will execute it in a subshell, and its environment changes will not persist.
+*   **Python Provider:** The script automatically sets up a Python virtual environment for Neovim. If you encounter issues, ensure the following line is in your LazyVim configuration (e.g., `~/.config/nvim/lua/config/options.lua`):
+    ```lua
+vim.g.python3_host_prog = os.getenv("HOME") .. "/.venvs/nvim/bin/python3"
+    ```
+*   **Ruby Provider:** The script installs `rbenv` and the `neovim` Ruby gem. Ensure `rbenv` is properly initialized in your shell profile (which the script attempts to do).
+*   **Perl Provider:** The script installs Perl and necessary CPAN modules using `local::lib`. Ensure `local::lib` is properly set up in your shell profile (which the script attempts to do).
+
 ## Shell Configuration
 ### Environment Variables
 ```sh
@@ -164,6 +210,10 @@ echo 'if [ -f ~/.bash_aliases ]; then . ~/.bash_aliases; fi' >> ~/.bashrc
 alias ll='ls -la'
 alias sublime="open -a Sublime\\ Text $@"
 alias cls='clear && printf "\033[3J"' # clear screen and scrollback buffer
+
+# Neovim configuration aliases
+alias lazyvim='lazyvim_func'
+alias astrovim='astrovim_func'
 ```
 
 #### **Create and Load a `.bash_functions` File:**
@@ -174,6 +224,23 @@ echo 'if [ -f ~/.bash_functions ]; then . ~/.bash_functions; fi' >> ~/.bashrc
 ```sh
 git_branch () { git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'; }
 set_win_title() { echo -ne "\033]0; $(basename \"$PWD\") \007"; }
+
+# Neovim configuration functions
+nvim_plain_func() { nvim "$@"; }
+lazyvim_func() {
+  XDG_CONFIG_HOME="$HOME/.config/lazyvim" \
+  XDG_DATA_HOME="$HOME/.local/share/lazyvim" \
+  XDG_STATE_HOME="$HOME/.local/state/lazyvim" \
+  XDG_CACHE_HOME="$HOME/.cache/lazyvim" \
+  nvim "$@"
+}
+astrovim_func() {
+  XDG_CONFIG_HOME="$HOME/.config/astronvim" \
+  XDG_DATA_HOME="$HOME/.local/share/astronvim" \
+  XDG_STATE_HOME="$HOME/.local/state/astronvim" \
+  XDG_CACHE_HOME="$HOME/.cache/astronvim" \
+  nvim "$@"
+}
 ```
 
 ### Keybindings for `fzf` History Search
@@ -184,10 +251,10 @@ export FZF_CTRL_R_OPTS="--preview 'echo {}' --height=40% --border"
 ### Prompt Customization
 ```sh
 TIME='\033[01;31m\]\t \033[01;32m\]'
-LOCATION=' \033[01;36m\]`pwd | sed "s#\(/[^/]\{1,\}/[^/]\{1,\}/[^/]\{1,\}/\).*/\(/[^/]\{1,\}/[^/]\{1,\}\)/\{0,1\}#\1_\2#g"`'
+LOCATION=' \033[01;36m\]`pwd | sed "s#\(/[^/]\\{1,\}/[^/]\\{1,\}/[^/]\\{1,\}/\).*\(/[^/]\\{1,\}/[^/]\\{1,\}\)/\\{0,1\}#\1_\2#g"`'
 BRANCH=' \033[00;33m\]$(git_branch)\[\033[00m\]\n$ '
 PS1=$TIME$USER$LOCATION$BRANCH
-PS2='\[\033[01;36m\]>'
+PS2='\033[01;36m\]>'
 
 # Automatically update window title
 starship_precmd_user_func="set_win_title"
@@ -218,4 +285,3 @@ For more details, refer to each tool’s documentation.
 
 ---
 ### [GitHub Repository (TBD)](https://github.com/your-repo)
-
