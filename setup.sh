@@ -61,7 +61,7 @@ TOOLS=(
   # Core development
   "git" "neovim" "lazygit" 
   # Modern CLI tools
-  "fzf" "ripgrep" "exa" "bat" "zoxide" "fd"
+  "fzf" "ripgrep" "exa" "bat" "zoxide" "fd" "yazi"
   # System tools
   "gdu" "bottom" "htop"
   # Language tools
