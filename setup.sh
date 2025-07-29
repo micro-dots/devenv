@@ -66,9 +66,16 @@ TOOLS=(
   "gdu" "bottom" "htop"
   # Language tools
   "python@3.13" "node" "ruby" "openjdk" "rust" "go"
-  # Additional utilities
-  "tmux" "starship" "ast-grep" "luarocks" "composer" "php"
-  "ghostscript" "tectonic" "julia"
+  # Development dependencies for LazyVim/AstroNvim
+  "fish" "ast-grep" "luarocks" "composer" "php" "julia"
+  # Document processing
+  "ghostscript" "tectonic"
+  # Terminal and prompt
+  "tmux" "starship"
+  # Perl for Neovim provider
+  "perl" "cpanminus"
+  # Font support
+  "fontconfig"
 )
 
 for tool in "${TOOLS[@]}"; do
@@ -97,6 +104,44 @@ done
 if command_exists npm; then
   log_info "Installing global npm packages..."
   npm install -g neovim @mermaid-js/mermaid-cli
+fi
+
+# Install rbenv and Ruby setup
+if command_exists rbenv; then
+  log_info "Setting up Ruby environment..."
+  eval "$(rbenv init -)"
+  
+  if [ ! -d "$HOME/.rbenv/versions/3.3.0" ]; then
+    log_info "Installing Ruby 3.3.0..."
+    rbenv install 3.3.0
+    rbenv global 3.3.0
+  else
+    log_success "Ruby 3.3.0 already installed"
+  fi
+  
+  log_info "Installing neovim Ruby gem..."
+  rbenv exec gem install neovim
+else
+  log_warning "rbenv not found, installing..."
+  brew install rbenv ruby-build
+  echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
+  log_info "Please restart your shell and run this script again for Ruby setup"
+fi
+
+# Install Perl modules for Neovim
+if command_exists cpanm; then
+  log_info "Installing Neovim Perl modules..."
+  
+  # Set up local::lib for Perl modules
+  if [ ! -d "$HOME/perl5" ]; then
+    PERL_MM_OPT="INSTALL_BASE=$HOME/perl5" $(brew --prefix perl)/bin/perl -MCPANM -e 'install local::lib'
+    eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib=$HOME/perl5)"
+  fi
+  
+  cpanm MsgPack::Raw
+  cpanm Neovim::Ext
+else
+  log_warning "cpanm not found, Perl modules will not be installed"
 fi
 
 # Create Python virtual environments
@@ -185,6 +230,41 @@ for package in "${STOW_PACKAGES[@]}"; do
     log_warning "Package $package not found, skipping"
   fi
 done
+
+# Configure Python providers for each Neovim configuration
+log_info "Configuring Python providers for Neovim configurations..."
+
+# Configure default nvim
+if [ -f "$HOME/.config/nvim/lua/config/options.lua" ]; then
+  if ! grep -q "python3_host_prog.*nvim" "$HOME/.config/nvim/lua/config/options.lua"; then
+    echo 'vim.g.python3_host_prog = os.getenv("HOME") .. "/.venvs/nvim/bin/python3"' >> "$HOME/.config/nvim/lua/config/options.lua"
+    log_success "Configured Python provider for default nvim"
+  fi
+fi
+
+# Configure LazyVim
+if [ -f "$HOME/.config/lazyvim/nvim/lua/config/options.lua" ]; then
+  if ! grep -q "python3_host_prog.*lazyvim" "$HOME/.config/lazyvim/nvim/lua/config/options.lua"; then
+    echo 'vim.g.python3_host_prog = os.getenv("HOME") .. "/.venvs/lazyvim/bin/python3"' >> "$HOME/.config/lazyvim/nvim/lua/config/options.lua"
+    log_success "Configured Python provider for LazyVim"
+  fi
+fi
+
+# Configure AstroNvim
+if [ -f "$HOME/.config/astronvim/nvim/lua/plugins/astrocore.lua" ]; then
+  if ! grep -q "python3_host_prog" "$HOME/.config/astronvim/nvim/lua/plugins/astrocore.lua"; then
+    # Enable astrocore.lua if it has the blocking line
+    if grep -q "if true then return {} end" "$HOME/.config/astronvim/nvim/lua/plugins/astrocore.lua"; then
+      sed -i '' 's/if true then return {} end -- WARN: REMOVE THIS LINE TO ACTIVATE THIS FILE/-- Activated to configure Python provider/' "$HOME/.config/astronvim/nvim/lua/plugins/astrocore.lua"
+    fi
+    
+    # Add Python provider configuration in the g section
+    sed -i '' '/g = { -- vim.g.<key>/a\
+        python3_host_prog = vim.fn.expand("~/.venvs/astronvim/bin/python3"),
+' "$HOME/.config/astronvim/nvim/lua/plugins/astrocore.lua"
+    log_success "Configured Python provider for AstroNvim"
+  fi
+fi
 
 # Setup fzf key bindings
 if command_exists fzf; then
