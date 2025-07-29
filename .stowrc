@@ -1,0 +1,9 @@
+# Stow configuration
+# Ignore these patterns when stowing
+--ignore=\.DS_Store
+--ignore=\.git
+--ignore=README\.md
+--ignore=LICENSE
+--ignore=\.stowrc
+--ignore=github-copilot
+--ignore=configstore

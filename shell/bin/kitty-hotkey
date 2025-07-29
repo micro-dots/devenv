@@ -1,0 +1,102 @@
+#!/bin/bash
+
+# Kitty Hotkey Window Script
+# Similar to iTerm2's hotkey window functionality
+
+KITTY_SOCKET="/tmp/mykitty"
+KITTY_PID_FILE="/tmp/kitty_hotkey.pid"
+
+# Function to check if kitty is running
+kitty_running() {
+    if [ -f "$KITTY_PID_FILE" ]; then
+        local pid=$(cat "$KITTY_PID_FILE")
+        if ps -p "$pid" > /dev/null 2>&1; then
+            return 0
+        else
+            rm -f "$KITTY_PID_FILE"
+            return 1
+        fi
+    fi
+    return 1
+}
+
+# Function to check if kitty window is visible/frontmost
+kitty_visible() {
+    if kitty_running; then
+        # Check if kitty is the frontmost application
+        osascript -e 'tell application "System Events" to get name of first application process whose frontmost is true' | grep -q "kitty"
+        return $?
+    fi
+    return 1
+}
+
+# Function to show/hide kitty
+toggle_kitty() {
+    if kitty_running; then
+        if kitty_visible; then
+            # Hide kitty by switching to previous app
+            osascript -e '
+                tell application "System Events"
+                    key code 48 using {command down}
+                end tell
+            '
+        else
+            # Show kitty by bringing it to front
+            osascript -e 'tell application "kitty" to activate'
+        fi
+    else
+        # Start kitty in hotkey mode
+        nohup kitty --single-instance --listen-on="unix:$KITTY_SOCKET" --directory="$HOME" > /dev/null 2>&1 &
+        echo $! > "$KITTY_PID_FILE"
+        
+        # Wait a moment for kitty to start, then activate and position it
+        sleep 1
+        osascript -e 'tell application "kitty" to activate'
+        
+        # Position the window (optional)
+        sleep 0.5
+        osascript -e '
+            tell application "System Events"
+                tell process "kitty"
+                    set position of front window to {100, 100}
+                    set size of front window to {1300, 800}
+                end tell
+            end tell
+        ' 2>/dev/null || true
+    fi
+}
+
+# Main execution
+case "${1:-toggle}" in
+    "toggle")
+        toggle_kitty
+        ;;
+    "show")
+        if kitty_running; then
+            osascript -e 'tell application "kitty" to activate'
+        else
+            toggle_kitty
+        fi
+        ;;
+    "hide")
+        if kitty_running && kitty_visible; then
+            # Hide by switching to previous app
+            osascript -e '
+                tell application "System Events"
+                    key code 48 using {command down}
+                end tell
+            '
+        fi
+        ;;
+    "kill")
+        if kitty_running; then
+            local pid=$(cat "$KITTY_PID_FILE")
+            kill "$pid"
+            rm -f "$KITTY_PID_FILE"
+        fi
+        ;;
+    *)
+        echo "Usage: $0 {toggle|show|hide|kill}"
+        exit 1
+        ;;
+esac

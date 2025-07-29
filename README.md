@@ -43,7 +43,7 @@ DevEnv provides opinionated, battle-tested configurations for a productive devel
 
 2. **Run the setup script:**
    ```bash
-   source ./osx/setup.sh
+   ./setup.sh
    ```
 
 3. **Start a new terminal session or reload your profile:**
@@ -82,18 +82,33 @@ DevEnv provides opinionated, battle-tested configurations for a productive devel
 
 ## Directory Structure
 
+This repository uses [GNU Stow](https://www.gnu.org/software/stow/) for dotfile management. Each directory represents a "package" that can be stowed independently:
+
 ```
 devenv/
-├── osx/                          # macOS-specific setup
-│   ├── setup.sh                  # Main setup script
-│   ├── .bash_profile             # Shell environment
-│   ├── .bashrc                   # Interactive shell config
-│   ├── .bash_aliases             # Command shortcuts
-│   ├── .bash_functions           # Shell functions
-│   ├── kitty-hotkey              # Kitty hotkey script
-│   └── starship_shell_template.toml # Prompt configuration
-├── CLAUDE.md                     # AI assistant guidance
-└── README.md                     # This file
+├── setup.sh                     # Main setup script
+├── .stowrc                      # Stow configuration
+├── shell/                       # Shell configurations
+│   ├── .bash_profile           # Shell environment
+│   ├── .bashrc                 # Interactive shell config
+│   ├── .bash_aliases           # Command shortcuts
+│   ├── .bash_functions         # Shell functions
+│   └── bin/kitty-hotkey        # Kitty hotkey script
+├── nvim/                       # Default Neovim config
+│   └── .config/nvim/
+├── lazyvim/                    # LazyVim configuration
+│   └── .config/lazyvim/
+├── astronvim/                  # AstroNvim configuration
+│   └── .config/astronvim/
+├── starship/                   # Starship prompt config
+│   └── .config/starship.toml
+├── tmux/                       # Tmux configuration
+│   └── .config/tmux/tmux.conf
+├── kitty/                      # Kitty terminal config
+│   └── .config/kitty/
+├── osx/                        # Legacy macOS setup (deprecated)
+├── CLAUDE.md                   # AI assistant guidance
+└── README.md                   # This file
 ```
 
 ## Configuration Locations
